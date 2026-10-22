@@ -330,6 +330,14 @@ body {
   color: var(--text-lo);
 }
 
+.logo__img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.18));
+  flex-shrink: 0;
+}
+
 /* ---------------------------------------------------------------------- */
 /* Nav                                                                     */
 /* ---------------------------------------------------------------------- */
@@ -406,6 +414,145 @@ body {
 
 .nav__cta {
   flex-shrink: 0;
+}
+
+/* ── Hamburger button (hidden on desktop) ──────────────────────────────── */
+.nav__burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+  position: relative;
+  z-index: 200;
+}
+
+.nav__burger:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.nav__burger-bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text-hi);
+  border-radius: 2px;
+  transform-origin: center;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity   0.2s ease,
+              width     0.25s ease;
+}
+
+/* Animate bars → X when open */
+.nav__burger--open .nav__burger-bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.nav__burger--open .nav__burger-bar:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.nav__burger--open .nav__burger-bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Backdrop — light, not heavy dark overlay ──────────────────────────── */
+.nav__backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s ease;
+  pointer-events: none;
+}
+.nav__backdrop--visible {
+  /* Subtle light grey — doesn't feel like a wall of darkness */
+  background: rgba(0, 0, 0, 0.15);
+  pointer-events: all;
+}
+
+/* ── Mobile slide-down drawer ─────────────────────────────────────────── */
+.nav__mobile-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 150;
+  /* Solid clean white — easy on the eyes, high contrast */
+  background: #ffffff;
+  border-bottom: 2px solid #e8e7e2;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  padding: 4px 0 20px;
+  transform: translateY(-8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity   0.22s ease;
+}
+
+.nav__mobile-menu--open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.nav__mobile-link {
+  display: flex;
+  align-items: center;
+  padding: 15px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  /* Dark readable text — high contrast for accessibility */
+  color: #2d3142;
+  border-left: 3px solid transparent;
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  opacity: 0;
+  transform: translateX(-8px);
+  text-decoration: none;
+}
+
+.nav__mobile-menu--open .nav__mobile-link {
+  opacity: 1;
+  transform: translateX(0);
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease,
+              opacity 0.28s ease calc(var(--i) * 40ms + 50ms),
+              transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) calc(var(--i) * 40ms + 50ms);
+}
+
+.nav__mobile-link:hover {
+  color: #12141b;
+  background: #f5f4f0;
+  border-left-color: var(--accent);
+}
+
+.nav__mobile-link.active {
+  color: #12141b;
+  border-left-color: var(--accent);
+  background: rgba(34, 242, 192, 0.08);
+  font-weight: 600;
+}
+
+/* Partner link — sits at bottom, clean and unobtrusive */
+.nav__mobile-cta {
+  padding: 14px 24px 0;
+  margin-top: 4px;
+  border-top: 1px solid #e8e7e2;
+}
+
+.nav__mobile-cta .btn {
+  width: 100%;
+  justify-content: center;
+  font-size: 15px;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1524,6 +1671,22 @@ body {
 @media (max-width: 768px) {
   .nav__links {
     display: none;
+  }
+
+  .nav__cta {
+    display: none;
+  }
+
+  .nav__burger {
+    display: flex;
+  }
+
+  .nav__backdrop {
+    display: block;
+  }
+
+  .nav__mobile-menu {
+    display: block;
   }
 
   .vision-mission__grid {

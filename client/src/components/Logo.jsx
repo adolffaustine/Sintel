@@ -1,8 +1,26 @@
+/**
+ * Logo component — renders the Sintel Company Ltd logo image.
+ * Falls back to the text wordmark if the image fails to load.
+ */
 export default function Logo({ showWordmark = true }) {
   return (
     <span className="logo">
+      <img
+        src="/sintel-logo.png"
+        alt="Sintel Company Ltd"
+        className="logo__img"
+        width="44"
+        height="44"
+        onError={(e) => {
+          // If image fails (e.g. during local dev without the asset), show SVG fallback
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.nextElementSibling && (e.currentTarget.nextElementSibling.style.display = 'block');
+        }}
+      />
+      {/* SVG fallback — hidden by default, shown if image fails */}
       <svg
         className="logo__mark"
+        style={{ display: 'none' }}
         width="34"
         height="34"
         viewBox="0 0 100 100"

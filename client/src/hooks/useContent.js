@@ -5,7 +5,7 @@ const ContentCtx = createContext(null);
 
 async function loadSections() {
   try {
-    const res = await fetch('api/content', { headers: { Accept: 'application/json' } });
+    const res = await fetch('/api/content', { headers: { Accept: 'application/json' } });
     if (!res.ok) return {};
     const body = await res.json();
     return body && typeof body === 'object' && body.sections ? body.sections : {};
