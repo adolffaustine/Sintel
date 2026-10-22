@@ -6,7 +6,10 @@ const { Pool } = require('pg');
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 
-const DATABASE_URL = "postgresql://postgres:fatherofAI%402000@localhost:5432/sintel";
+// ── Database ─────────────────────────────────────────────────────────────────
+// Set DATABASE_URL in your environment (or .env loaded by a process manager).
+// Example: postgresql://user:password@host:5432/sintel
+const DATABASE_URL = process.env.DATABASE_URL || '';
 let pool = null;
 
 // Initial admin password — change it from the admin page after first login.
@@ -49,12 +52,10 @@ if (DATABASE_URL) {
      ON CONFLICT (username) DO NOTHING`, [initialHash]
   )).then(() => console.log('[db] schema ready')).catch((e) => console.error('[db] bootstrap failed:', e.message));
 } else {
-  console.warn('[db] DATABASE_URL not set — persistence disabled');
+  console.warn('[db] DATABASE_URL not set — running without database (contact form & admin will be disabled)');
 }
 
-const APP_PREFIX = '/volt/sintel-technologies';
-
-// ---------- helpers ----------
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function hashPassword(pw) {
   const salt = crypto.randomBytes(8).toString('hex');
   return crypto.scryptSync(String(pw), salt, 32).toString('hex') + ':' + salt;
@@ -88,16 +89,15 @@ function requireAdmin(handler) {
   };
 }
 
-// ---------- health ----------
-app.get(['/api/health', `${APP_PREFIX}/api/health`], async (_req, res) => {
+// ── Health ────────────────────────────────────────────────────────────────────
+app.get('/api/health', async (_req, res) => {
   if (!pool) return res.status(503).json({ ok: false, error: 'database_unavailable' });
   try { await pool.query('SELECT 1'); res.json({ ok: true }); }
   catch { res.status(503).json({ ok: false, error: 'database_unavailable' }); }
 });
 
-// ---------- public content API ----------
-// Returns the saved site content; the frontend merges it over the built-in defaults.
-app.get(['/api/content', `${APP_PREFIX}/api/content`], async (_req, res) => {
+// ── Public content API ────────────────────────────────────────────────────────
+app.get('/api/content', async (_req, res) => {
   if (!pool) return res.json({ sections: {} });
   try {
     const { rows } = await pool.query(`SELECT data FROM content_sections WHERE section = 'site'`);
@@ -106,8 +106,8 @@ app.get(['/api/content', `${APP_PREFIX}/api/content`], async (_req, res) => {
   } catch { res.json({ sections: {} }); }
 });
 
-// ---------- admin auth ----------
-app.post(['/api/admin/login', `${APP_PREFIX}/api/admin/login`], async (req, res) => {
+// ── Admin auth ────────────────────────────────────────────────────────────────
+app.post('/api/admin/login', async (req, res) => {
   if (!pool) return res.status(503).json({ ok: false, error: 'database_unavailable' });
   const { password } = req.body || {};
   if (!password) return res.status(400).json({ ok: false, error: 'password required' });
@@ -124,7 +124,7 @@ app.post(['/api/admin/login', `${APP_PREFIX}/api/admin/login`], async (req, res)
   } catch { res.status(503).json({ ok: false, error: 'database_unavailable' }); }
 });
 
-app.post(['/api/admin/logout', `${APP_PREFIX}/api/admin/logout`], async (req, res) => {
+app.post('/api/admin/logout', async (req, res) => {
   try {
     const token = tokenFrom(req);
     if (token && pool) await pool.query('DELETE FROM admin_sessions WHERE token = $1', [token]);
@@ -132,21 +132,21 @@ app.post(['/api/admin/logout', `${APP_PREFIX}/api/admin/logout`], async (req, re
   res.json({ ok: true });
 });
 
-app.get(['/api/admin/me', `${APP_PREFIX}/api/admin/me`], async (req, res) => {
+app.get('/api/admin/me', async (req, res) => {
   try {
     if (!(await isAdmin(req))) return res.status(401).json({ ok: false, error: 'not signed in' });
     res.json({ ok: true });
   } catch { res.status(503).json({ ok: false, error: 'database_unavailable' }); }
 });
 
-// ---------- admin content save/load ----------
-app.get(['/api/admin/content', `${APP_PREFIX}/api/admin/content`], requireAdmin(async (_req, res) => {
+// ── Admin content save/load ────────────────────────────────────────────────────
+app.get('/api/admin/content', requireAdmin(async (_req, res) => {
   const { rows } = await pool.query(`SELECT data FROM content_sections WHERE section = 'site'`);
   const saved = rows[0] && rows[0].data;
   res.json({ ok: true, content: (saved && typeof saved === 'object') ? saved : {} });
 }));
 
-app.put(['/api/admin/content', `${APP_PREFIX}/api/admin/content`], requireAdmin(async (req, res) => {
+app.put('/api/admin/content', requireAdmin(async (req, res) => {
   const content = req.body && req.body.content;
   if (!content || typeof content !== 'object' || Array.isArray(content)) {
     return res.status(400).json({ ok: false, error: 'content object required' });
@@ -158,8 +158,8 @@ app.put(['/api/admin/content', `${APP_PREFIX}/api/admin/content`], requireAdmin(
   res.json({ ok: true });
 }));
 
-// ---------- admin password change ----------
-app.post(['/api/admin/password', `${APP_PREFIX}/api/admin/password`], requireAdmin(async (req, res) => {
+// ── Admin password change ─────────────────────────────────────────────────────
+app.post('/api/admin/password', requireAdmin(async (req, res) => {
   const { current, next } = req.body || {};
   if (!current || !next) return res.status(400).json({ ok: false, error: 'current and next password required' });
   if (String(next).length < 8) return res.status(400).json({ ok: false, error: 'new password must be at least 8 characters' });
@@ -171,8 +171,8 @@ app.post(['/api/admin/password', `${APP_PREFIX}/api/admin/password`], requireAdm
   res.json({ ok: true });
 }));
 
-// ---------- contact form ----------
-app.post(['/api/contact', `${APP_PREFIX}/api/contact`], async (req, res) => {
+// ── Contact form ──────────────────────────────────────────────────────────────
+app.post('/api/contact', async (req, res) => {
   const { name, email, organization, inquiryType, message } = req.body || {};
 
   if (!name || !String(name).trim() || !email || !String(email).trim() || !message || !String(message).trim()) {
@@ -201,22 +201,23 @@ app.post(['/api/contact', `${APP_PREFIX}/api/contact`], async (req, res) => {
   }
 });
 
-// ---------- contact submissions for admin ----------
-app.get(['/api/admin/submissions', `${APP_PREFIX}/api/admin/submissions`], requireAdmin(async (_req, res) => {
+// ── Admin: list submissions ───────────────────────────────────────────────────
+app.get('/api/admin/submissions', requireAdmin(async (_req, res) => {
   const { rows } = await pool.query(
     'SELECT name, email, organization, inquiry_type, message, created_at FROM contact_submissions ORDER BY created_at DESC LIMIT 200');
   res.json({ ok: true, submissions: rows });
 }));
 
-// ---------- static site ----------
+// ── Serve React SPA ───────────────────────────────────────────────────────────
 const distDir = path.join(__dirname, 'client', 'dist');
 app.use(express.static(distDir));
-app.use(APP_PREFIX, express.static(distDir));
 
+// SPA fallback — send index.html for any non-API route so client-side routing works
 app.get(/^(?!\/api\/).*/, (_req, res) => {
   res.sendFile(path.join(distDir, 'index.html'));
 });
 
+// ── Start server ──────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 4031;
-app.listen(PORT, '0.0.0.0', () => console.log(`Sintel Technologies listening on ${PORT}`))
+app.listen(PORT, '0.0.0.0', () => console.log(`Sintel Technologies server listening on port ${PORT}`))
   .on('error', (e) => { console.error('listen failed:', e.message); process.exit(1); });
