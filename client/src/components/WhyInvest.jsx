@@ -17,6 +17,7 @@ export default function WhyInvest() {
           {content.whyInvest.map((item, i) => (
             <Reveal key={item.title} className="card why-invest-card" delay={i * 80} style={cardAccentStyle(i)}>
               <div className="why-invest-card__image-wrap">
+                <div className="why-invest-card__image-fallback" />
                 {item.image ? (
                   <img
                     src={item.image}

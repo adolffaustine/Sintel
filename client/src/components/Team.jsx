@@ -42,13 +42,16 @@ export default function Team() {
               aria-label={`${member.name}${member.role ? `, ${member.role}` : ''}`}
             >
               {member.photo ? (
-                <img
-                  src={member.photo}
-                  alt={member.name}
-                  className="team-avatar__photo"
-                  loading="lazy"
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                />
+                <>
+                  <div className="team-avatar__photo-fallback" />
+                  <img
+                    src={member.photo}
+                    alt={member.name}
+                    className="team-avatar__photo"
+                    loading="lazy"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                </>
               ) : (
                 <span className="team-avatar__circle">{initials(member.name)}</span>
               )}

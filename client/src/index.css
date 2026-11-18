@@ -2192,6 +2192,13 @@ body {
 /* ---------------------------------------------------------------------- */
 /* Hero background image (front-top visual)                               */
 /* ---------------------------------------------------------------------- */
+.hero-dark__bg-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(34, 242, 192, 0.18) 0%, rgba(6, 13, 26, 0.9) 60%, #060d1a 100%);
+  pointer-events: none;
+}
 .hero-dark__bg-image {
   position: absolute;
   inset: 0;
@@ -2229,11 +2236,37 @@ body {
   margin-bottom: 14px;
   background: var(--bg-panel);
 }
+.focus-card__image-fallback,
+.service-card__image-fallback,
+.value-card__image-fallback,
+.why-invest-card__image-fallback {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent-2-soft));
+  opacity: 0.55;
+  pointer-events: none;
+}
+.focus-card__image-fallback {
+  border-radius: var(--radius-md);
+}
+.service-card__image-fallback {
+  border-radius: var(--radius-md);
+}
+.value-card__image-fallback {
+  border-radius: var(--radius-md);
+}
+.why-invest-card__image-fallback {
+  border-radius: var(--radius-md);
+}
+
 .focus-card__image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: 0.95;
+  position: relative;
+  z-index: 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -2258,6 +2291,14 @@ body {
 /* ---------------------------------------------------------------------- */
 /* Team — photo avatars                                                   */
 /* ---------------------------------------------------------------------- */
+.team-avatar__photo-fallback {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent-2-soft));
+  opacity: 0.6;
+  pointer-events: none;
+}
 .team-avatar__photo {
   width: 100%;
   height: 100%;
@@ -2265,6 +2306,8 @@ body {
   border-radius: 50%;
   border: 2px solid rgba(255,255,255,0.6);
   box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  position: relative;
+  z-index: 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -2367,12 +2410,21 @@ body {
   overflow: hidden;
   margin-bottom: 0;
 }
+.contact-page__banner-fallback,
+.about-banner__fallback {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(6, 13, 26, 0.5) 0%, rgba(34, 242, 192, 0.15) 60%, rgba(124, 92, 255, 0.15) 100%);
+  pointer-events: none;
+}
 .contact-page__banner-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   display: block;
+  position: relative;
+  z-index: 1;
 }
 .contact-page__banner-overlay {
   position: absolute;

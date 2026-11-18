@@ -17,6 +17,7 @@ export default function Values() {
           {content.values.map((value, i) => (
             <Reveal key={value.title} className="card value-card" delay={i * 80} style={cardAccentStyle(i)}>
               <div className="value-card__image-wrap">
+                <div className="value-card__image-fallback" />
                 {value.image ? (
                   <img
                     src={value.image}

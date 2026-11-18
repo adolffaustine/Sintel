@@ -35,6 +35,7 @@ export default function FocusAreas() {
                 style={cardAccentStyle(i)}
               >
                 <div className="focus-card__image-wrap">
+                  <div className="focus-card__image-fallback" />
                   {area.image ? (
                     <img
                       src={area.image}

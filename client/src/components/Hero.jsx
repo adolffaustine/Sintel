@@ -92,6 +92,7 @@ export default function Hero() {
       <div className="hero-dark__bg" aria-hidden="true">
         {heroBgImage ? (
           <>
+            <div className="hero-dark__bg-fallback" aria-hidden="true" />
             <img
               src={heroBgImage}
               alt=""
@@ -105,7 +106,9 @@ export default function Hero() {
             />
             <div className="hero-dark__overlay" aria-hidden="true" />
           </>
-        ) : null}
+        ) : (
+          <div className="hero-dark__bg-fallback" aria-hidden="true" />
+        )}
         <span className="hero-dark__orb hero-dark__orb--a" />
         <span className="hero-dark__orb hero-dark__orb--b" />
         <span className="hero-dark__orb hero-dark__orb--c" />

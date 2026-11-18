@@ -34,6 +34,7 @@ export default function ServicesGrid() {
                 style={cardAccentStyle(i)}
               >
                 <div className="service-card__image-wrap">
+                  <div className="service-card__image-fallback" />
                   {service.image ? (
                     <img
                       src={service.image}

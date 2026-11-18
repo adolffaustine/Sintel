@@ -16,6 +16,7 @@ export default function About() {
     <>
       <section className="about-banner">
         <div className="about-banner__image">
+          <div className="about-banner__fallback" />
           <img
             src="https://images.unsplash.com/photo-1504197614791-21045513b0b7?q=80&w=1200&auto=format&fit=crop"
             alt="Engineering team working"

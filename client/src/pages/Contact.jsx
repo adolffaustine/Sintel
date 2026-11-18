@@ -11,6 +11,7 @@ export default function Contact() {
     <section className="contact-page">
       {contactImage && (
         <div className="contact-page__banner">
+          <div className="contact-page__banner-fallback" />
           <img
             src={contactImage}
             alt="Contact"
