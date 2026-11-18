@@ -17,18 +17,18 @@ export default function Values() {
           {content.values.map((value, i) => (
             <Reveal key={value.title} className="card value-card" delay={i * 80} style={cardAccentStyle(i)}>
               <div className="value-card__image-wrap">
-                <div className="value-card__image-fallback" />
                 {value.image ? (
                   <img
                     src={value.image}
                     alt={value.title}
                     className="value-card__image"
-                    loading="lazy"
+                    loading="eager"
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
-                ) : (
+                ) : null}
+                <div className="value-card__image-fallback">
                   <span className="value-card__index">{String(i + 1).padStart(2, '0')}</span>
-                )}
+                </div>
               </div>
               <h3 className="value-card__title">{value.title}</h3>
               <p className="value-card__desc">{value.description}</p>

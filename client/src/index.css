@@ -2246,6 +2246,25 @@ body {
   background: linear-gradient(135deg, var(--accent-soft), var(--accent-2-soft));
   opacity: 0.55;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.focus-card__fallback-icon,
+.service-card__fallback-icon,
+.value-card__index,
+.why-invest-card__image-fallback .why-invest-card__glyph {
+  color: rgba(255, 255, 255, 0.55);
+  opacity: 0.85;
+}
+.value-card__image-fallback {
+  opacity: 0.6;
+}
+.value-card__index {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
 }
 .focus-card__image-fallback {
   border-radius: var(--radius-md);

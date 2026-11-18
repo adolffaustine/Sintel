@@ -17,18 +17,18 @@ export default function WhyInvest() {
           {content.whyInvest.map((item, i) => (
             <Reveal key={item.title} className="card why-invest-card" delay={i * 80} style={cardAccentStyle(i)}>
               <div className="why-invest-card__image-wrap">
-                <div className="why-invest-card__image-fallback" />
                 {item.image ? (
                   <img
                     src={item.image}
                     alt={item.title}
                     className="why-invest-card__image"
-                    loading="lazy"
+                    loading="eager"
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
-                ) : (
+                ) : null}
+                <div className="why-invest-card__image-fallback">
                   <span className="why-invest-card__glyph" aria-hidden="true" />
-                )}
+                </div>
               </div>
               <h3 className="why-invest-card__title">{item.title}</h3>
               <p className="why-invest-card__desc">{item.description}</p>

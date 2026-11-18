@@ -11,7 +11,6 @@ export default function Contact() {
     <section className="contact-page">
       {contactImage && (
         <div className="contact-page__banner">
-          <div className="contact-page__banner-fallback" />
           <img
             src={contactImage}
             alt="Contact"
@@ -19,6 +18,7 @@ export default function Contact() {
             loading="eager"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
+          <div className="contact-page__banner-fallback" />
           <div className="contact-page__banner-overlay" />
           <div className="contact-page__banner-content">
             <Reveal as="div" className="contact-page__banner-head">

@@ -43,14 +43,16 @@ export default function Team() {
             >
               {member.photo ? (
                 <>
-                  <div className="team-avatar__photo-fallback" />
                   <img
                     src={member.photo}
                     alt={member.name}
                     className="team-avatar__photo"
-                    loading="lazy"
+                    loading="eager"
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
+                  <div className="team-avatar__photo-fallback">
+                    <span className="team-avatar__circle">{initials(member.name)}</span>
+                  </div>
                 </>
               ) : (
                 <span className="team-avatar__circle">{initials(member.name)}</span>

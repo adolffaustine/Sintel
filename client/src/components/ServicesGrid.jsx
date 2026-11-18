@@ -34,20 +34,20 @@ export default function ServicesGrid() {
                 style={cardAccentStyle(i)}
               >
                 <div className="service-card__image-wrap">
-                  <div className="service-card__image-fallback" />
                   {service.image ? (
                     <img
                       src={service.image}
                       alt={service.title}
                       className="service-card__image"
-                      loading="lazy"
+                      loading="eager"
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
-                  ) : (
-                    <span className="service-card__icon">
-                      <Icon size={26} strokeWidth={1.75} />
+                  ) : null}
+                  <div className="service-card__image-fallback">
+                    <span className="service-card__fallback-icon">
+                      <Icon size={20} strokeWidth={1.75} />
                     </span>
-                  )}
+                  </div>
                 </div>
                 <h3 className="service-card__title">{service.title}</h3>
                 <p className="service-card__desc">{service.description}</p>

@@ -35,20 +35,20 @@ export default function FocusAreas() {
                 style={cardAccentStyle(i)}
               >
                 <div className="focus-card__image-wrap">
-                  <div className="focus-card__image-fallback" />
                   {area.image ? (
                     <img
                       src={area.image}
                       alt={area.title}
                       className="focus-card__image"
-                      loading="lazy"
+                      loading="eager"
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
-                  ) : (
-                    <span className="focus-card__icon">
-                      <Icon size={26} strokeWidth={1.75} />
+                  ) : null}
+                  <div className="focus-card__image-fallback">
+                    <span className="focus-card__fallback-icon">
+                      <Icon size={20} strokeWidth={1.75} />
                     </span>
-                  )}
+                  </div>
                 </div>
                 <h3 className="focus-card__title">{area.title}</h3>
                 <p className="focus-card__desc">{area.description}</p>
