@@ -34,9 +34,21 @@ export default function FocusAreas() {
                 delay={(i % 3) * 90}
                 style={cardAccentStyle(i)}
               >
-                <span className="focus-card__icon">
-                  <Icon size={26} strokeWidth={1.75} />
-                </span>
+                <div className="focus-card__image-wrap">
+                  {area.image ? (
+                    <img
+                      src={area.image}
+                      alt={area.title}
+                      className="focus-card__image"
+                      loading="lazy"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <span className="focus-card__icon">
+                      <Icon size={26} strokeWidth={1.75} />
+                    </span>
+                  )}
+                </div>
                 <h3 className="focus-card__title">{area.title}</h3>
                 <p className="focus-card__desc">{area.description}</p>
               </Reveal>

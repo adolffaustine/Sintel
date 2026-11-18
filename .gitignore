@@ -1,0 +1,54 @@
+# ============================================================================
+# Sintel Technologies — .gitignore
+# ============================================================================
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Build outputs
+client/dist/
+*.tsbuildinfo
+
+# Local environment (never commit secrets)
+.env
+.env.production
+.env.development
+
+# PM2 logs & process files
+logs/
+*.log
+pm2-*.log
+
+# PM2 ecosystem (okay to commit, but local overrides ignored)
+ecosystem.local.config.js
+
+# Docker / docker-compose local overrides
+.dockerignore.local
+docker-compose.override.yml
+
+# Uploads (user-generated content — stored on server, not in repo)
+client/dist/uploads/
+client/public/uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Misc
+coverage/
+.nyc_output/

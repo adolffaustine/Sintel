@@ -6,3 +6,7 @@ client/dist
 .env
 .env.*
 !.env.example
+nginx/
+*.sh
+ecosystem.config.js
+logs/

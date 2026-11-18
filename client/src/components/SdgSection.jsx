@@ -27,6 +27,27 @@ export default function SdgSection() {
             </span>
           ))}
         </Reveal>
+        <div className="sdg-section__visual" aria-hidden="true">
+          {sdgs.map((sdg) => (
+            <span
+              key={sdg.number}
+              className="sdg-badge"
+              style={{
+                background: sdgColor(sdg.number),
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 8px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+              }}
+            >
+              {sdg.number}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );

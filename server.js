@@ -1,10 +1,89 @@
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
 const { Pool } = require('pg');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
+
+// ── Trust proxy (for rate limiting behind nginx/load-balancer) ────────────────
+app.set('trust proxy', 1);
+
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: false, // allow React SPA inline scripts
+}));
+
+// ── Compression ───────────────────────────────────────────────────────────────
+app.use(compression());
+
+// ── CORS ──────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '';
+app.use((req, res, next) => {
+  if (ALLOWED_ORIGIN) {
+    res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Admin-Token');
+    if (req.method === 'OPTIONS') return res.sendStatus(204);
+  }
+  next();
+});
+
+// ── Body parser ───────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '2mb' }));
+
+// ── Rate limiters ─────────────────────────────────────────────────────────────
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: 'too many requests, please try again later' },
+});
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: 'too many login attempts, please try again later' },
+});
+
+// ── Multer (image uploads) ────────────────────────────────────────────────────
+const UPLOAD_MAX_MB = parseInt(process.env.UPLOAD_MAX_SIZE_MB || '5', 10);
+const uploadDistDir = path.join(__dirname, 'client', 'dist', 'uploads');
+const uploadPublicDir = path.join(__dirname, 'client', 'public', 'uploads');
+
+// Ensure upload directories exist
+[uploadDistDir, uploadPublicDir].forEach((dir) => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadDistDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const unique = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+    cb(null, unique);
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: UPLOAD_MAX_MB * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = /\.(jpe?g|png|gif|webp|svg|avif)$/i;
+    if (!allowed.test(path.extname(file.originalname))) {
+      return cb(new Error('Only image files are allowed'));
+    }
+    cb(null, true);
+  },
+});
 
 // ── Database ─────────────────────────────────────────────────────────────────
 // Set DATABASE_URL in your environment (or .env loaded by a process manager).
@@ -107,7 +186,7 @@ app.get('/api/content', async (_req, res) => {
 });
 
 // ── Admin auth ────────────────────────────────────────────────────────────────
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', loginLimiter, async (req, res) => {
   if (!pool) return res.status(503).json({ ok: false, error: 'database_unavailable' });
   const { password } = req.body || {};
   if (!password) return res.status(400).json({ ok: false, error: 'password required' });
@@ -135,7 +214,7 @@ app.post('/api/admin/logout', async (req, res) => {
 app.get('/api/admin/me', async (req, res) => {
   try {
     if (!(await isAdmin(req))) return res.status(401).json({ ok: false, error: 'not signed in' });
-    res.json({ ok: true });
+    res.json({ ok: true, authed: true });
   } catch { res.status(503).json({ ok: false, error: 'database_unavailable' }); }
 });
 
@@ -172,7 +251,7 @@ app.post('/api/admin/password', requireAdmin(async (req, res) => {
 }));
 
 // ── Contact form ──────────────────────────────────────────────────────────────
-app.post('/api/contact', async (req, res) => {
+app.post('/api/contact', contactLimiter, async (req, res) => {
   const { name, email, organization, inquiryType, message } = req.body || {};
 
   if (!name || !String(name).trim() || !email || !String(email).trim() || !message || !String(message).trim()) {
@@ -201,11 +280,41 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// ── Admin: list submissions ───────────────────────────────────────────────────
-app.get('/api/admin/submissions', requireAdmin(async (_req, res) => {
-  const { rows } = await pool.query(
-    'SELECT name, email, organization, inquiry_type, message, created_at FROM contact_submissions ORDER BY created_at DESC LIMIT 200');
-  res.json({ ok: true, submissions: rows });
+// ── Admin: list submissions (with pagination) ─────────────────────────────────
+app.get('/api/admin/submissions', requireAdmin(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page || '1', 10));
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || '20', 10)));
+  const offset = (page - 1) * limit;
+
+  const { rows: countRows } = await pool.query('SELECT COUNT(*)::int AS total FROM contact_submissions');
+  const total = countRows[0].total;
+  const pages = Math.ceil(total / limit) || 1;
+
+  const { rows: submissions } = await pool.query(
+    'SELECT id, name, email, organization, inquiry_type, message, created_at FROM contact_submissions ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+    [limit, offset]
+  );
+
+  res.json({ ok: true, submissions, total, page, pages });
+}));
+
+// ── Admin: image upload ───────────────────────────────────────────────────────
+app.post('/api/admin/upload', requireAdmin((req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ ok: false, error: err.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ ok: false, error: 'no file uploaded' });
+    }
+    // Also copy to client/public/uploads for dev server access
+    const publicPath = path.join(uploadPublicDir, req.file.filename);
+    try {
+      fs.copyFileSync(req.file.path, publicPath);
+    } catch { /* ignore if public dir not writable */ }
+
+    res.json({ ok: true, url: `/uploads/${req.file.filename}` });
+  });
 }));
 
 // ── Serve React SPA ───────────────────────────────────────────────────────────

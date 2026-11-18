@@ -33,9 +33,21 @@ export default function ServicesGrid() {
                 delay={(i % 2) * 100}
                 style={cardAccentStyle(i)}
               >
-                <span className="service-card__icon">
-                  <Icon size={26} strokeWidth={1.75} />
-                </span>
+                <div className="service-card__image-wrap">
+                  {service.image ? (
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      className="service-card__image"
+                      loading="lazy"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <span className="service-card__icon">
+                      <Icon size={26} strokeWidth={1.75} />
+                    </span>
+                  )}
+                </div>
                 <h3 className="service-card__title">{service.title}</h3>
                 <p className="service-card__desc">{service.description}</p>
 

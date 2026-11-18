@@ -19,7 +19,9 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <div className="section-sep" />
       <Traction />
+      <div className="section-sep" />
       <FocusAreas />
 
       <section className="section services-teaser">
@@ -77,6 +79,10 @@ export default function Home() {
                 style={cardAccentStyle(i)}
               >
                 <span className="project-card__bar" aria-hidden="true" />
+                {project.imageUrl
+                  ? <img src={project.imageUrl} alt={project.name} className="project-card__cover" />
+                  : <div className="project-card__cover project-card__cover--placeholder" aria-hidden="true" />
+                }
                 <p className="project-card__eyebrow">PROJECT {String(i + 1).padStart(2, '0')}</p>
                 <h3 className="project-card__name">{project.name}</h3>
                 <p className="project-card__tagline">{project.tagline}</p>

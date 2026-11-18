@@ -41,7 +41,17 @@ export default function Team() {
               style={{ ...fanStyle(i, members.length), ...cardAccentStyle(i) }}
               aria-label={`${member.name}${member.role ? `, ${member.role}` : ''}`}
             >
-              <span className="team-avatar__circle">{initials(member.name)}</span>
+              {member.photo ? (
+                <img
+                  src={member.photo}
+                  alt={member.name}
+                  className="team-avatar__photo"
+                  loading="lazy"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+              ) : (
+                <span className="team-avatar__circle">{initials(member.name)}</span>
+              )}
               <span className="team-avatar__tip">
                 <span className="team-avatar__tip-name">{member.name}</span>
                 {member.role && <span className="team-avatar__tip-role">{member.role}</span>}
